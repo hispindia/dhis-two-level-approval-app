@@ -68,8 +68,8 @@ button {
 }
 
 .approvalTable{
-    table-layout:fixed;
-    width:95%;
+    table-layout: fixed;
+  
     word-wrap: break-word;
     border-collapse:collapse;
         
@@ -91,4 +91,17 @@ button {
 
 .approvalButton{
     width:70px;
+}
+
+.approval_nonText{
+    width:30px;
+}
+
+.approval_normal{
+
+    width:70px;
+}
+
+.approval_wide{
+    width:150px;
 }

@@ -7,7 +7,7 @@
     }
   },
   "appType": "APP",
-  "name": "OU/Period Progressive Report",
+  "name": "Doc Diary Data Approval",
   "version": "1.0.0",
   "description": "",
   "developer": {
@@ -15,6 +15,5 @@
     "email": "harsh.atal@gmail.com"
   },
   "icons": {
-    "48": "images/icon.png"
   }
 }

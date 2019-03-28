@@ -120,17 +120,17 @@ export function ApprovalTable(props){
     
     function getHeader(){
         var list = [];
-        list.push(<th key="h_eventdate">Event Date</th>);
-        list.push(<th key="h_name of specilist">Name of Specialist</th>);
-        list.push(<th key="h_ou">Org Unit</th>);
+        list.push(<th className="approval_normal" key="h_eventdate">Event Date</th>);
+        list.push(<th className="approval_normal" key="h_name of specilist">Name of Specialist</th>);
+        list.push(<th className="approval_wide"  key="h_ou">Org Unit</th>);
         
         selectedStage.
             programStageDataElements.
             reduce(function(list,obj){
-                list.push(<th key={obj.id}>{obj.dataElement.name}</th>)
+                list.push(<th className={obj.valueType != "TEXT"?"approval_nonText":""} key={obj.id}>{obj.dataElement.name}</th>)
                 return list;
             },list);
-        list.push(<th className = "" key="h_operation">#</th>);
+        list.push(<th className="approval_normal" key="h_operation">#</th>);
 
         return list;
     }
@@ -144,14 +144,14 @@ export function ApprovalTable(props){
             },[]);
 
             var _list = [];
-            _list.push(<td key="d_eventdate">{event.eventDate.substring(0,10)}</td>);
-            _list.push(<td key="d_name of specilist">{teiAttrValMap[event.trackedEntityInstance+"U0jQjrOkFjR"]}</td>);
-            _list.push(<td key="d_ou">{makeFacilityStrBelowLevel(ouMap[event.orgUnit],2)}</td>);
+            _list.push(<td className="approval_normal" key="d_eventdate">{event.eventDate.substring(0,10)}</td>);
+            _list.push(<td className="approval_normal" key="d_name of specilist">{teiAttrValMap[event.trackedEntityInstance+"U0jQjrOkFjR"]}</td>);
+            _list.push(<td className="approval_wide" key="d_ou">{makeFacilityStrBelowLevel(ouMap[event.orgUnit],2)}</td>);
             
             selectedStage.
                 programStageDataElements.
                 reduce(function(_list,obj){
-                    _list.push(<td key={"d"+obj.id+event.event}>{eventDVMap[obj.dataElement.id]}</td>)
+                    _list.push(<td className={obj.valueType != "TEXT"?"approval_nonText":""}  key={"d"+obj.id+event.event}>{eventDVMap[obj.dataElement.id]}</td>)
                     return _list;
                 },_list);
 
@@ -162,7 +162,7 @@ export function ApprovalTable(props){
         },[]);
         
         function getButtons(eventuid){
-            return (<td className = "" key={"b_"+eventuid}><div className="approvalOperationDiv">
+            return (<td className="approval_normal" key={"b_"+eventuid}><div className="approvalOperationDiv">
                     <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Approve" onClick={approveRecord.bind(null,eventuid)}></input>
                     <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Reject" onClick={rejectRecord.bind(null,eventuid)}></input>
                     </div></td>)
@@ -185,6 +185,10 @@ export function ApprovalTable(props){
                 <h5> Record List </h5>
 
                 <table className="approvalTable">
+                
+            </table>
+
+                <table className="approvalTable">
                 <thead>
                 <tr>
                 <th colSpan="3">Attributes</th>
@@ -195,9 +199,6 @@ export function ApprovalTable(props){
             </tr>
                 </thead>
 
-            </table>
-
-                <table className="approvalTable">
                 <tbody>
                 
             {getRows()}
