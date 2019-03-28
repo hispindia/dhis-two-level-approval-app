@@ -68,15 +68,16 @@ button {
 }
 
 .approvalTable{
-    table-layout: fixed;
-  
+    table-layout: auto;
+    
+    font-size: 15px;
     word-wrap: break-word;
     border-collapse:collapse;
         
 }
 .approvalTable td,th{
     border: 1px solid #dddddd;
-    text-align: left;
+    text-align: center;
     margin:0;
     padding:0;
 }
@@ -90,7 +91,8 @@ button {
 }
 
 .approvalButton{
-    width:70px;
+    width:60px;
+    margin:5px;
 }
 
 .approval_nonText{
