@@ -144,7 +144,7 @@ export function ApprovalTable(props){
             },[]);
 
             var _list = [];
-            _list.push(<td className="approval_normal" key="d_eventdate">{event.eventDate.substring(0,10)}</td>);
+            _list.push(<td className="approval_normal" key="d_eventdate">{event.eventDate?event.eventDate.substring(0,10):""}</td>);
             _list.push(<td className="approval_normal" key="d_name of specilist">{teiAttrValMap[event.trackedEntityInstance+"U0jQjrOkFjR"]}</td>);
             _list.push(<td className="approval_wide" key="d_ou">{makeFacilityStrBelowLevel(ouMap[event.orgUnit],2)}</td>);
             

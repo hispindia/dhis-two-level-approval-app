@@ -36,7 +36,7 @@ exports.report_types = {
     rejected : "rejected"
 }
 
-exports.approval_status_de = "OZUfNtngt0T";
+exports.approval_status_de = "W3RxC0UOsGY";
 exports.approval_rejection_reason_de = "CCNnr8s3rgE";
 
 exports.query_teiWiseAttrValue = function(teis){
