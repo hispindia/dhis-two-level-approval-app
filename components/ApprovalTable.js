@@ -127,7 +127,7 @@ export function ApprovalTable(props){
         selectedStage.
             programStageDataElements.
             reduce(function(list,obj){
-                list.push(<th className={obj.valueType != "TEXT"?"approval_nonText":""} key={obj.id}>{obj.dataElement.name}</th>)
+                list.push(<th className={obj.valueType != "TEXT"?"approval_nonText":""} key={obj.id}>{obj.dataElement.formName}</th>)
                 return list;
             },list);
         list.push(<th className="approval_normal" key="h_operation">#</th>);

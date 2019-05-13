@@ -15,5 +15,8 @@
     "email": "harsh.atal@gmail.com"
   },
   "icons": {
+  "16":"images/approval.png",
+  "48":"images/approval.png",
+  "128":"images/approval.png"
   }
 }
