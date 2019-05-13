@@ -1,7 +1,8 @@
 import React,{propTypes} from 'react';
 import api from '../dhis2API';
 import {ApprovalTable} from './ApprovalTable';
-import constants from '../constants'
+import constants from '../constants';
+import moment from 'moment';
 
 export function ApprovalI(props){
     
@@ -13,10 +14,12 @@ export function ApprovalI(props){
         program : props.data.program,
         user : props.data.user,
         selectedOU : {name : ""},
+        orgUnitValidation : "",
+        specialityValidation : "",
         ouMode : "DESCENDANTS",
-        sdate : new Date("2018-01-01").toISOString().substr(0,10),
-        edate : new Date().toISOString().substr(0,10),
-        selectedSpeciality : "FkNlQ5arLjv",
+        sdate : moment().subtract(1,'months').startOf('month').format("YYYY-MM-DD"),
+        edate : moment().subtract(1,'months').endOf('month').format("YYYY-MM-DD"),
+        selectedSpeciality : "-1",
         events : null,
         teiWiseAttrVals : null,
         ous : [],
@@ -37,6 +40,8 @@ export function ApprovalI(props){
 
     function onSpecialityChange(e){
         state.selectedSpeciality = e.target.value;
+        state.specialityValidation = ""
+
         instance.setState(state);
     }
 
@@ -64,16 +69,37 @@ export function ApprovalI(props){
     function callMeWhenInPain(){
         getApprovalEvents();
     }
+
+    function validate(){
+        if (state.selectedOU.id == undefined){
+            state.orgUnitValidation = "Please select Facility form left bar"
+            instance.setState(state);
+            return false;
+        }
+
+        if (state.selectedSpeciality == "-1"){
+            state.specialityValidation = "Please select Speciality"
+            instance.setState(state);
+            return false;
+        }
+        
+        return true;
+    }
+
     
     function getApprovalEvents(e){
 
+        // validation
+        if (!validate()){
+            return;
+        }
+        
         state.teiWiseAttrVals = null;
         state.events = null;
         state.loading=true;
         instance.setState(state);
 
-        // validation
-
+        
      
         fetchEventGrid(function(eventuids){
             if (!eventuids){
@@ -260,7 +286,7 @@ export function ApprovalI(props){
         function getSpeciality(program){
             
             var options = [
-                    <option key="select_speciality" value="-1"> -- All -- </option>
+                    <option disabled key="select_speciality" value="-1"> -- Select -- </option>
             ];
             
             program.programStages.forEach(function(ps){
@@ -277,9 +303,9 @@ export function ApprovalI(props){
                 <table className="formX">
                 <tbody>
                 <tr>
-                <td>  Select Speciality<span style={{"color":"red"}}> * </span> : </td><td><select  value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select><br></br> <label key="reportValidation" ><i>{}</i></label>
+                <td>  Select Speciality<span style={{"color":"red"}}> * </span> : </td><td><select  value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select><br></br> <label key="specialityValidation" ><i>{state.specialityValidation}</i></label>
                 </td>
-                <td className="leftM">  Selected Facility<span style={{"color":"red"}}> * </span>  : </td><td><input disabled  value={state.selectedOU.name}></input><br></br><label key="orgUnitValidation" ><i>{}</i></label></td>
+                <td className="leftM">  Selected Facility<span style={{"color":"red"}}> * </span>  : </td><td><input disabled  value={state.selectedOU.name}></input><br></br><label key="orgUnitValidation" ><i>{state.orgUnitValidation}</i></label></td>
                 
             </tr>
                 <tr>

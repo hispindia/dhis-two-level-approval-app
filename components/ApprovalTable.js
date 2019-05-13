@@ -47,11 +47,11 @@ export function ApprovalTable(props){
     return instance;
 
 
-    function approveRecord(eventuid,e){        
+    function approveRecord(eventuid,programuid,e){        
 
         var approveDeVal = state.userAuthority==constants.approval_usergroup_level1_code?constants.approval_status.pending2:constants.approval_status.approved;
         //        approveDeVal="Pending1";
-        saveDV(eventuid,
+        saveDV(eventuid,programuid,
                constants.approval_status_de,
                approveDeVal,
                constants.approval_rejection_reason_de,
@@ -61,7 +61,7 @@ export function ApprovalTable(props){
 
     }
 
-    function saveDV(eventuid,
+    function saveDV(eventuid,programuid,
                     approvalDe,
                     approvalDeVal,
                     rejectionDe,
@@ -75,6 +75,7 @@ export function ApprovalTable(props){
                 {dataElement : approvalDe,
                  value:approvalDeVal}
             ],
+            program : programuid,
             status :status
         }
         apiWrapper.updateObj(url,obj,function(error,body,response){
@@ -89,6 +90,7 @@ export function ApprovalTable(props){
                     {dataElement : rejectionDe,
                      value:rejectionDeVal}
                 ],
+                program:programuid,
                 status :status
             }
 
@@ -105,11 +107,11 @@ export function ApprovalTable(props){
         })
     }
     
-    function rejectRecord(eventuid,e){
+    function rejectRecord(eventuid,programuid,e){
         var reason = prompt("Please enter reason for rejection", "");
         if (!reason){return}
         
-        saveDV(eventuid,
+        saveDV(eventuid,programuid,
                constants.approval_status_de,
                constants.approval_status.rejected,
                constants.approval_rejection_reason_de,
@@ -155,16 +157,16 @@ export function ApprovalTable(props){
                     return _list;
                 },_list);
 
-            _list.push(getButtons(event.event))
+            _list.push(getButtons(event.event,event.program))
 
             list.push([<tr key={event.event}>{_list}</tr>]);
             return list;
         },[]);
         
-        function getButtons(eventuid){
+        function getButtons(eventuid,programuid){
             return (<td className="approval_normal" key={"b_"+eventuid}><div className="approvalOperationDiv">
-                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Approve" onClick={approveRecord.bind(null,eventuid)}></input>
-                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Reject" onClick={rejectRecord.bind(null,eventuid)}></input>
+                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Approve" onClick={approveRecord.bind(null,eventuid,programuid)}></input>
+                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Reject" onClick={rejectRecord.bind(null,eventuid,programuid)}></input>
                     </div></td>)
         }
     }
