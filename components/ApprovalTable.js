@@ -4,7 +4,7 @@ import constants from '../constants'
 
 
 export function ApprovalTable(props){
-    
+    debugger
     var instance = Object.create(React.Component.prototype);
     instance.props = props;
     
@@ -181,7 +181,7 @@ export function ApprovalTable(props){
     }
     
     function render(){
-        
+        debugger
         return ( 
                 <div>
                 <h5> Record List </h5>

@@ -22,9 +22,7 @@ export function ApprovalI(props){
         selectedSpeciality : "-1",
         events : null,
         teiWiseAttrVals : null,
-        ous : [],
-        type : constants.report_types.pending,
-        userAuthority : getUserAuthority(props.data.user)
+        ous : []
     };
 
     
@@ -87,7 +85,7 @@ export function ApprovalI(props){
     }
 
     
-    function getApprovalEvents(e){
+    function getData(e){
 
         // validation
         if (!validate()){
@@ -99,100 +97,32 @@ export function ApprovalI(props){
         state.loading=true;
         instance.setState(state);
 
-        
-     
-        fetchEventGrid(function(eventuids){
-            if (!eventuids){
-                alert("No Data Found");
-                state.loading=false;
-                instance.setState(state);
-                return
-            }
-            fetchEvents(eventuids)
-
-        });
-        
-        
-        function fetchEvents(eventuids){
+        var Q = makeQuery();
+        Q = constants.query_jsonize(Q);
+        var sqlViewService = new api.sqlViewService();
             
-            var url = `events?order=orgUnitName:asc&event=${eventuids}`;
+        console.log(Q)
+        sqlViewService.dip("DOC_DIARY_REPORT_",
+                           Q,makeReport);
+            
+        function makeReport(error,response,body){
 
-            var apiWrapper = new api.wrapper();
-            apiWrapper.getObj(url,function(error,body,response){
-                if (error){
-                    alert("An unexpected error occurred." + error);
-                    return;
-                }
+            if (error){
+                alert("An unexpected error happenned. Please check your network connection and try again.");
+                return;
+            }
 
-                var events = response.events;
-                state.events = events;
-
-                getTEIFromEvents(events,function(error,body,response){
-                    if (error){
-
-                    }
-
-                    var attrVals = JSON.parse(response.
-                                              listGrid.
-                                              rows[0][0]?response.
-                                              listGrid.
-                                              rows[0][0].value:null);
-                    
-                    state.teiWiseAttrVals = attrVals;
-
-                    getOuFromEvent(events,function(error,response,body){
-                        if (error){
-                            
-                        }
-                        
-                        state.ous = body.organisationUnits;
-                        state.loading=false;
-                        instance.setState(state)
-                    })
-                    
-                })
-                
-            })
-
+            state.rawData = JSON.parse(body.listGrid.rows[0][0].value);
+            instance.setState(state);
+            
+            
         }
         
-        function fetchEventGrid(callback){
-            var url = `events/query?program=${constants.program_doc_diary}&startDate=${state.sdate}&endDate=${state.edate}&orgUnit=${state.selectedOU.id}&ouMode=${state.ouMode}&programStage=${state.selectedSpeciality}&skipPaging=true`;
-
-            switch(state.type){
-            case constants.report_types.approved :
-                url = `${url}&status=COMPLETED&filter=${constants.approval_status_de}:IN:${constants.approval_status.approved};${constants.approval_status.autoapproved}`
-                break;
-            case constants.report_types.pending:
-                if (state.userAuthority == constants.approval_usergroup_level1_code){
-                    url = `${url}&status=COMPLETED&filter=${constants.approval_status_de}:IN:${constants.approval_status.pending1};${constants.approval_status.resubmitted}`
-                    
-                }else{
-                    url = `${url}&status=COMPLETED&filter=${constants.approval_status_de}:IN:${constants.approval_status.pending2}`                
-                }
-                
-                break;
-            case constants.report_types.rejected:
-                url = `${url}&status=ACTIVE&filter=${constants.approval_status_de}:IN:${constants.approval_status.rejected}`
-                break;                
-            }
-            
-            var apiWrapper = new api.wrapper();
-            apiWrapper.getObj(url,function(error,body,response){
-                if (error){
-                    alert("An unexpected error occurred." + error);
-                    return;
-                }
-
-                var eventuids = response.rows.reduce(function(str,obj){
-                    str = str + obj[0] + ";"
-                    return str;
-                },"")
-
-                callback(eventuids)
-                
-            })
+        function makeQuery(){
+            return constants.query_ddReport();  
         }
+        
+   
         
         function getTEIFromEvents(events,callback){
 
@@ -250,35 +180,16 @@ export function ApprovalI(props){
             
         }
     }
-
-    function getUserAuthority(user){
-
-        return user.userGroups.reduce(function(str,obj){
-
-            if (obj.code == constants.approval_usergroup_level1_code){
-                str = constants.approval_usergroup_level1_code;                
-            }
-
-            if (obj.code == constants.approval_usergroup_level2_code){
-                str = constants.approval_usergroup_level2_code;                
-            }
-            return str;    
-        },null)
-        
-    }
-
+  
     function render(){        
         
         function getApprovalTable(){
-            if (!state.userAuthority){
-                return (<div>You do not have approval authority</div>)
-            }
-            
-            if(!(state.events || state.teiWiseAttrVals)){
+         debugger
+            if(!(state.rawData)){
                 return (<div></div>)
             }        
             
-            return (<ApprovalTable key="approvaltable"  events={state.events} program={state.program} user={state.user} teiWiseAttrVals={state.teiWiseAttrVals} selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} userAuthority={state.userAuthority}/>
+            return (<ApprovalTable key="approvaltable"  rawData={state.rawData} events={state.events} program={state.program} user={state.user} teiWiseAttrVals={state.teiWiseAttrVals} selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} />
                    );
             
         }
@@ -298,7 +209,7 @@ export function ApprovalI(props){
         
         return ( 
                 <div>
-                <h3> Approval {state.userAuthority==constants.approval_usergroup_level1_code?"MOIC":"CMO/CMS"} </h3>
+                <h3> Doc Diary Reports  </h3>
                 
                 <table className="formX">
                 <tbody>
@@ -327,7 +238,7 @@ export function ApprovalI(props){
                 
             </tr>
                 <tr></tr><tr></tr>
-                <tr><td>  <input type="submit" value="Submit" onClick={getApprovalEvents} ></input></td>
+                <tr><td>  <input type="submit" value="Submit" onClick={getData} ></input></td>
                 <td> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>
 
             </tbody>                

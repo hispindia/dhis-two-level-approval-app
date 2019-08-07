@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {ApprovalI} from './components/ApprovalI';
 import {TreeComponent} from './lib/ous'
-import api from './dhis2API';
+import api from 'dhis2api';
 import constants from './constants'
 
 window.onload = function(){
