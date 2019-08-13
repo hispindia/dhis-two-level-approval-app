@@ -20,8 +20,6 @@ export function ApprovalI(props){
         sdate : moment().subtract(1,'months').startOf('month').format("YYYY-MM-DD"),
         edate : moment().subtract(1,'months').endOf('month').format("YYYY-MM-DD"),
         selectedSpeciality : "-1",
-        events : null,
-        teiWiseAttrVals : null,
         ous : []
     };
 
@@ -64,13 +62,9 @@ export function ApprovalI(props){
         
     }
 
-    function callMeWhenInPain(){
-        getApprovalEvents();
-    }
-
     function validate(){
         if (state.selectedOU.id == undefined){
-            state.orgUnitValidation = "Please select Facility form left bar"
+            state.orgUnitValidation = "Please select Facility from left bar"
             instance.setState(state);
             return false;
         }
@@ -92,8 +86,7 @@ export function ApprovalI(props){
             return;
         }
         
-        state.teiWiseAttrVals = null;
-        state.events = null;
+        state.rawData = null;
         state.loading=true;
         instance.setState(state);
 
@@ -111,7 +104,13 @@ export function ApprovalI(props){
                 alert("An unexpected error happenned. Please check your network connection and try again.");
                 return;
             }
-            
+
+            if (!body.listGrid.rows[0][0]){
+                alert("No Data");
+                state.loading=false;
+                instance.setState(state);
+                return;
+            }
             state.rawData = JSON.parse(body.listGrid.rows[0][0].value);
             getOUWithHierarchy(function(error,response,body){
                 if (error){
@@ -120,13 +119,18 @@ export function ApprovalI(props){
                 }
 
                 state.ous = body.organisationUnits;
+                state.loading=false;
                 instance.setState(state);            
                 
             });
         }
         
         function makeQuery(){
-            return constants.query_ddReport();  
+            
+            return constants.query_ddReport(state.selectedSpeciality,
+                                            state.selectedOU.id,
+                                            state.sdate,
+                                           state.edate);  
         }
         
         function getOUWithHierarchy(callback){
@@ -166,7 +170,7 @@ export function ApprovalI(props){
             if(!(state.rawData)){
                 return (<div></div>)
             }        
-            return (<ApprovalTable key="approvaltable"  rawData={state.rawData} selectedOU={state.selectedOU} sdate={state.sdate} edate={state.edate} program={state.program} user={state.user}  selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} />
+            return (<ApprovalTable key="approvaltable"  rawData={state.rawData} selectedOU={state.selectedOU} sdate={state.sdate} edate={state.edate} program={state.program} user={state.user}  selectedSpeciality={state.selectedSpeciality} ous={state.ous}  />
                    );
             
         }
@@ -203,17 +207,7 @@ export function ApprovalI(props){
                 </td>
                 <td></td>
                 </tr>
-                <tr>
-                <td className="" > Select OU Mode : </td><td><select  value = { state.ouMode  }  id="ouMode" onChange = {onOuModeChange}> <option key="selected"  value="SELECTED" > Selected </option> <option key="descendants" value="DESCENDANTS" > Descendants </option> </select></td>
-
-                <td className="leftM" > Select Type : </td><td><select  value = { state.type  }  id="type" onChange = {onTypeChange}>
-                <option key="rejected"  value={constants.report_types.rejected} > Rejected </option>
-                <option key="application_for_approval"  value={constants.report_types.pending} > Application for Approval </option>
-                <option key="approved"  value={constants.report_types.approved} > Approved  </option>
-                
-            </select></td>
-                
-            </tr>
+              
                 <tr></tr><tr></tr>
                 <tr><td>  <input type="submit" value="Submit" onClick={getData} ></input></td>
                 <td> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>

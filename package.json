@@ -22,6 +22,7 @@
     "moment": "^2.24.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-html-table-to-excel": "^2.0.0",
     "webpack": "^4.2.0",
     "xlsx-populate": "^1.14.0"
   },

@@ -38,7 +38,7 @@ exports.report_types = {
 
 exports.approval_status_de = "W3RxC0UOsGY";
 exports.approval_rejection_reason_de = "CCNnr8s3rgE";
-exports.query_ddReport = function(){
+exports.query_ddReport = function(ps,ou,sdate,edate){
 
     return `
 select 
@@ -54,16 +54,34 @@ inner join (
 	inner join trackedentitydatavalue tedv on tedv.programstageinstanceid = psi.programstageinstanceid
 	inner join dataelement de on de.dataelementid = tedv.dataelementid
 	inner join trackedentityinstance tei on tei.trackedentityinstanceid = pi.trackedentityinstanceid
-	where tedv.value ~ '^-?[0-9]+\.?[0-9]*$' and tedv.value !='0'
+	where tedv.value ~ '^-?[0-9]+.?[0-9]*$' and tedv.value !='0'
 	and de.valuetype = 'NUMBER'
-	and psi.executiondate between '2017-01-01' and '2019-06-01'
+	and psi.executiondate between '${sdate}' and '${edate}'
 	and psi.programstageid in (select programstageid 
 								from programstage 
-								where uid = 'CLoZpOqTSI8')
+								where uid = '${ps}')
 	and tei.organisationunitid in (select organisationunitid 
 									from organisationunit 
-									where path like '%SpddBmmfvPr%')
+									where path like '%${ou}%')
 	group by pi.trackedentityinstanceid,de.uid,tei.organisationunitid
+	
+	union
+	select tei.organisationunitid,pi.trackedentityinstanceid as tei,
+tedv.value,count(tedv.value)
+	from programstageinstance psi
+	inner join programinstance pi on pi.programinstanceid = psi.programinstanceid
+	inner join trackedentitydatavalue tedv on tedv.programstageinstanceid = psi.programstageinstanceid
+	inner join dataelement de on de.dataelementid = tedv.dataelementid
+	inner join trackedentityinstance tei on tei.trackedentityinstanceid = pi.trackedentityinstanceid
+	where psi.executiondate between '${sdate}' and '${edate}'
+	and de.uid in ('x2uDVEGfY4K')
+	and psi.programstageid in (select programstageid 
+								from programstage 
+								where uid = '${ps}')
+	and tei.organisationunitid in (select organisationunitid 
+									from organisationunit 
+									where path like '%${ou}%')
+	group by pi.trackedentityinstanceid,de.uid,tei.organisationunitid,tedv.value
 )tedv
 on teav.trackedentityinstanceid = tedv.tei
 inner join trackedentityattribute tea on tea.trackedentityattributeid = teav.trackedentityattributeid
@@ -71,32 +89,10 @@ inner join organisationunit ou on ou.organisationunitid = tedv.organisationuniti
 group by tedv.tei
 order by tei
 
-
 `
 
 }
-exports.query_teiWiseAttrValue = function(teis){
 
-    
-    return `select json_agg(attrvalues) as attrvals
-        from(
-	    select json_build_object(
-                'tei',tei.uid,'attrs',
-	        json_agg(
-	            json_build_object(
-			'attr' , tea.uid,
-			'value' , teav.value
-		        
-		    )
-	        )) as attrvalues
-
-	    from trackedentityattributevalue teav
-	    inner join trackedentityinstance tei on tei.trackedentityinstanceid = teav.trackedentityinstanceid
-	    inner join trackedentityattribute tea on tea.trackedentityattributeid = teav.trackedentityattributeid
-	    where tei.uid in (${teis} )	
-	    group by tei.uid
-        )endofQ`
-}
 
 exports.cache_curr_user = "dd_current_user";
 exports.cache_user_prefix = "dd_user_";

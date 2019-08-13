@@ -1,6 +1,7 @@
 import React,{propTypes} from 'react';
 import api from '../dhis2API';
 import constants from '../constants'
+import ReactHTMLTableToExcel from 'react-html-table-to-excel';
 
 
 export function ApprovalTable(props){
@@ -16,9 +17,7 @@ export function ApprovalTable(props){
         edate:props.edate,
         selectedOU:props.selectedOU,
         selectedSpeciality : props.selectedSpeciality,
-        ous : props.ous,
-        callMeWhenInPain : props.callMeWhenInPain,
-        userAuthority : props.userAuthority
+        ous : props.ous
     };
 
     var programStageMap = state.program.programStages.reduce(function(map,obj){
@@ -39,8 +38,11 @@ export function ApprovalTable(props){
     
     function getHeader(){
         var list = [];
-        list.push(<th className="approval_normal" key="h_name of specilist">Name of Specialist</th>);
-        list.push(<th className="approval_wide"  key="h_ou">Org Unit</th>);
+        list.push(<th className="approval_wide" key="h_name of specilist">Name of Specialist</th>);
+        list.push(<th className="approval_wideX"  key="h_ou">Org Unit</th>);
+        list.push(<th className="approval_normal"  key="h_working">Working</th>);
+        list.push(<th className="approval_normal"  key="h_leave">Leave</th>);
+        list.push(<th className="approval_normal"  key="h_offday">Off Day</th>);
         
         selectedStage.
             programStageDataElements.
@@ -68,9 +70,13 @@ export function ApprovalTable(props){
             },[]);
 
             var _list = [];
-            _list.push(<td className="approval_normal" key="d_name of specilist">{attrMap["U0jQjrOkFjR"]}</td>);
-            _list.push(<td className="approval_wide" key="d_ou">{makeFacilityStrBelowLevel(ouMap[data.ouuid],2)}</td>);
-            
+            _list.push(<td className="approval_wide" key="d_name of specilist">{attrMap["U0jQjrOkFjR"]}</td>);
+            _list.push(<td className="approval_wideX" key="d_ou">{makeFacilityStrBelowLevel(ouMap[data.ouuid],2)}</td>);
+
+            _list.push(<td className="approval_normal" key="d_working">{dvMap["Working"]}</td>);
+            _list.push(<td className="approval_normal" key="d_leave">{dvMap["Leave"]}</td>);
+            _list.push(<td className="approval_normal" key="d_offday">{dvMap["Off day"]}</td>);
+
             selectedStage.
                 programStageDataElements.
                 reduce(function(_list,obj){
@@ -98,17 +104,22 @@ export function ApprovalTable(props){
     function render(){
         return ( 
                 <div>
-                <h5> Record List </h5>
+                <h5> Report </h5>
 
-                <table className="approvalTable">
-                
-            </table>
+                <ReactHTMLTableToExcel
+            id="test-table-xls-button"
+            className="download-table-xls-button"
+            table="table-to-xls"
+            filename={"DD_"+state.selectedOU.name+"_"+selectedStage.name+"_"+state.sdate+"-"+state.edate}
+            sheet="1"
+            buttonText="Download"/>
 
-                <table className="approvalTable">
+            
+                <table className="approvalTable" id="table-to-xls">
                 <thead>
                 <tr>
-                <th colSpan="3">Org Unit:{state.selectedOU.name}</th>
-                <th colSpan={selectedStage.programStageDataElements.length}>{state.sdate} -  {state.edate}</th>
+                <th colSpan="2">{state.selectedOU.name}</th>
+                <th colSpan={selectedStage.programStageDataElements.length+1}>{state.sdate} -  {state.edate}</th>
 
             </tr>
                 <tr>

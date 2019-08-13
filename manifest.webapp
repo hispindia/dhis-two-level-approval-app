@@ -7,7 +7,7 @@
     }
   },
   "appType": "APP",
-  "name": "Doc Diary Data Approval",
+  "name": "Doc Diary Reports",
   "version": "1.0.0",
   "description": "",
   "developer": {
@@ -15,8 +15,8 @@
     "email": "harsh.atal@gmail.com"
   },
   "icons": {
-  "16":"images/approval.png",
-  "48":"images/approval.png",
-  "128":"images/approval.png"
+  "16":"images/ddreport.png",
+  "48":"images/ddreport.png",
+  "128":"images/ddreport.png"
   }
 }
