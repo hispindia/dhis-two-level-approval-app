@@ -43,7 +43,7 @@ exports.query_ddReport = function(){
     return `
 select 
 tei,
-max(ou.name) as ouname,
+max(ou.uid) as ouuid,
 array_agg(distinct concat(tea.uid,':',teav.value)) as attrlist,
 array_agg(distinct concat(de,':',devalue)) as delist
 from trackedentityattributevalue teav

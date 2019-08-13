@@ -100,63 +100,40 @@ export function ApprovalI(props){
         var Q = makeQuery();
         Q = constants.query_jsonize(Q);
         var sqlViewService = new api.sqlViewService();
-            
+        
         console.log(Q)
         sqlViewService.dip("DOC_DIARY_REPORT_",
                            Q,makeReport);
-            
+        
         function makeReport(error,response,body){
 
             if (error){
                 alert("An unexpected error happenned. Please check your network connection and try again.");
                 return;
             }
-
+            
             state.rawData = JSON.parse(body.listGrid.rows[0][0].value);
-            instance.setState(state);
-            
-            
+            getOUWithHierarchy(function(error,response,body){
+                if (error){
+                    alert("An unexpected error happenned. Please check your network connection and try again.");
+                    return;
+                }
+
+                state.ous = body.organisationUnits;
+                instance.setState(state);            
+                
+            });
         }
         
         function makeQuery(){
             return constants.query_ddReport();  
         }
         
-   
-        
-        function getTEIFromEvents(events,callback){
-
-            var teis = events.reduce(function(list,obj){
-                if (!list.includes(obj.trackedEntityInstance)){
-                    list.push(obj.trackedEntityInstance)
-                }
-                return list;
-            },[]);
-
+        function getOUWithHierarchy(callback){
             
-            teis = teis.reduce(function(str,obj){
-                if (!str){
-                    str =  "'" + obj + "'"
-                }else{
-                    str = str + ",'" + obj + "'"
-                }
-                
-                return str; 
-            },null);
-
-            var sqlViewService = new api.sqlViewService();
-            
-            console.log(constants.query_teiWiseAttrValue(teis))
-            sqlViewService.dip("Approval_App",
-                               constants.query_teiWiseAttrValue(teis),
-                               callback);
-            
-        }
-        
-        function getOuFromEvent(events,callback){
-            var ous = events.reduce(function(list,obj){
-                if (!list.includes(obj.orgUnit)){
-                    list.push(obj.orgUnit)
+            var ous = state.rawData.reduce(function(list,obj){
+                if (!list.includes(obj.ouuid)){
+                    list.push(obj.ouuid)
                 }
                 return list;
             },[]);
@@ -173,23 +150,23 @@ export function ApprovalI(props){
             },null);
 
             var apiWrapper = new api.wrapper();
-            var url = `organisationUnits.json?filter=id:in:[${ous}]&fields=id,name,ancestors[id,name,level]`;
-
-            apiWrapper.getObj(url,callback)
-
+            var url = `organisationUnits.json?filter=id:in:[${ous}]&fields=id,name,ancestors[id,name,level]&paging=false`;
             
+            apiWrapper.getObj(url,callback)
         }
+        
     }
-  
+    
+    
+    
     function render(){        
         
         function getApprovalTable(){
-         debugger
+            
             if(!(state.rawData)){
                 return (<div></div>)
             }        
-            
-            return (<ApprovalTable key="approvaltable"  rawData={state.rawData} events={state.events} program={state.program} user={state.user} teiWiseAttrVals={state.teiWiseAttrVals} selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} />
+            return (<ApprovalTable key="approvaltable"  rawData={state.rawData} selectedOU={state.selectedOU} sdate={state.sdate} edate={state.edate} program={state.program} user={state.user}  selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} />
                    );
             
         }
