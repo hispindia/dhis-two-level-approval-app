@@ -24,7 +24,26 @@ export function ApprovalTable(props){
         map[obj.id] = obj;
         return map;
     },[]);
-
+    
+    var programStageOptionSetOptionsMap = state.program.programStages.reduce(function(map,obj){
+        
+        var optionSetMap = obj.programStageDataElements.reduce(function(map,obj){
+            
+            if (obj.dataElement.optionSet){
+                map[obj.dataElement.id] = [];
+                var options = obj.dataElement.optionSet.options;
+                for (var i=0; i< options.length;i++){
+                    map[obj.dataElement.id][options[i].code] = options[i].name;
+                }
+            }
+            
+            return map;
+        },[]);
+        
+        map[obj.id] = optionSetMap;
+        return map;
+    },[]);
+    
     var teiAttrValMap = state.teiWiseAttrVals.reduce(function(map,tei){
 
         return tei.attrs.reduce(function(map,obj){
@@ -49,7 +68,7 @@ export function ApprovalTable(props){
 
     function approveRecord(eventuid,programuid,e){        
 
-        var approveDeVal = state.userAuthority==constants.approval_usergroup_level1_code?constants.approval_status.pending2:constants.approval_status.approved;
+        var approveDeVal = state.userAuthority==constants.approval_usergroup_level1_code?constants.approval_status.approved:constants.approval_status.approved;
         //        approveDeVal="Pending1";
         saveDV(eventuid,programuid,
                constants.approval_status_de,
@@ -141,7 +160,17 @@ export function ApprovalTable(props){
         
         return state.events.reduce(function(list,event){
             var eventDVMap = event.dataValues.reduce(function(map,obj){
+
                 map[obj.dataElement] = obj.value;
+
+                if (programStageOptionSetOptionsMap[event.programStage]){
+                    if (programStageOptionSetOptionsMap[event.programStage][obj.dataElement]){
+                        if (programStageOptionSetOptionsMap[event.programStage][obj.dataElement][obj.value]){
+                            map[obj.dataElement]= programStageOptionSetOptionsMap[event.programStage][obj.dataElement][obj.value];
+                        }
+                    }
+                }
+                
                 return map;                
             },[]);
 

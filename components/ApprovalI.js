@@ -9,6 +9,7 @@ export function ApprovalI(props){
     var instance = Object.create(React.Component.prototype);
     instance.props = props;
     
+  
     var state = {
 
         program : props.data.program,
@@ -26,8 +27,7 @@ export function ApprovalI(props){
         type : constants.report_types.pending,
         userAuthority : getUserAuthority(props.data.user)
     };
-
-    
+      
     props.services.ouSelectCallback.selected = function(ou){
 
         state.selectedOU = ou;
