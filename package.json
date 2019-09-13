@@ -21,7 +21,8 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "webpack": "^4.2.0",
-    "xlsx-populate": "^1.14.0"
+    "xlsx-populate": "^1.14.0",
+    "react-html-table-to-excel": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

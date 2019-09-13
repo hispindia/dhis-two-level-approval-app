@@ -1,6 +1,7 @@
 import React,{propTypes} from 'react';
 import api from '../dhis2API';
-import constants from '../constants'
+import constants from '../constants';
+import ReactHTMLTableToExcel from 'react-html-table-to-excel';
 
 
 export function ApprovalTable(props){
@@ -65,19 +66,22 @@ export function ApprovalTable(props){
     instance.render = render;
     return instance;
 
+    function approveRecord(eventuid,programuid,e){
 
-    function approveRecord(eventuid,programuid,e){        
+        if (confirm("Are You Sure You want to Approve this record")) {
 
-        var approveDeVal = state.userAuthority==constants.approval_usergroup_level1_code?constants.approval_status.approved:constants.approval_status.approved;
-        //        approveDeVal="Pending1";
-        saveDV(eventuid,programuid,
-               constants.approval_status_de,
-               approveDeVal,
-               constants.approval_rejection_reason_de,
-               "",
-               "COMPLETED",
-               state.callMeWhenInPain);
+            var approveDeVal = state.userAuthority==constants.approval_usergroup_level1_code?constants.approval_status.approved:constants.approval_status.approved;
+            //        approveDeVal="Pending1";
+            saveDV(eventuid,programuid,
+                constants.approval_status_de,
+                approveDeVal,
+                constants.approval_rejection_reason_de,
+                "",
+                "COMPLETED",
+                state.callMeWhenInPain);
+        } else {
 
+        }
     }
 
     function saveDV(eventuid,programuid,
@@ -128,15 +132,22 @@ export function ApprovalTable(props){
     
     function rejectRecord(eventuid,programuid,e){
         var reason = prompt("Please enter reason for rejection", "");
+        if(reason.length > 160)
+        {alert("User can enter 160 characters only"); return;}
         if (!reason){return}
-        
-        saveDV(eventuid,programuid,
-               constants.approval_status_de,
-               constants.approval_status.rejected,
-               constants.approval_rejection_reason_de,
-               reason,
-               "ACTIVE",
-               state.callMeWhenInPain);
+        if (confirm("Are You Sure You want to Reject this record")) {
+            saveDV(eventuid, programuid,
+                constants.approval_status_de,
+                constants.approval_status.rejected,
+                constants.approval_rejection_reason_de,
+                reason,
+                "ACTIVE",
+                state.callMeWhenInPain);
+
+        }
+        else{
+
+        }
     }
     
     function getHeader(){
@@ -151,8 +162,9 @@ export function ApprovalTable(props){
                 list.push(<th className={obj.valueType != "TEXT"?"approval_nonText":""} key={obj.id}>{obj.dataElement.formName}</th>)
                 return list;
             },list);
-        list.push(<th className="approval_normal" key="h_operation">#</th>);
-
+        if(state.type == constants.report_types.pending){
+            list.push(<th className="approval_normal" key="h_operation">Approved/ Rejected</th>);
+        }
         return list;
     }
 
@@ -186,8 +198,9 @@ export function ApprovalTable(props){
                     return _list;
                 },_list);
 
-            _list.push(getButtons(event.event,event.program))
-
+            if(state.type == constants.report_types.pending) {
+                _list.push(getButtons(event.event, event.program))
+            }
             list.push([<tr key={event.event}>{_list}</tr>]);
             return list;
         },[]);
@@ -215,11 +228,17 @@ export function ApprovalTable(props){
                 <div>
                 <h5> Record List </h5>
 
-                <table className="approvalTable">
-                
-            </table>
+                <ReactHTMLTableToExcel
+                        id="test-table-xls-button"
+                        className=""
+                        table="table-to-xls"
+                        filename={"DD_Approval_"+selectedStage.name+"_"+state.sdate+"-"+state.edate}
+                        sheet="1"
+                        buttonText="Download"/>
 
-                <table className="approvalTable">
+
+
+                <table className="approvalTable report" id="table-to-xls" class="approvalTable report">
                 <thead>
                 <tr>
                 <th colSpan="3">Attributes</th>

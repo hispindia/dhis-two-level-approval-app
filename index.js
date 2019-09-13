@@ -23,10 +23,11 @@ window.onload = function(){
 
     var select = {}
     select.selected = function(callback){
+         return true
         debugger
     }
-      
-    ReactDOM.render(<TreeComponent  onSelectCallback={select}/>, document.getElementById('treeComponent'));
+
+    ReactDOM.render(<TreeComponent  onSelectCallback={select} selected ='true'/>, document.getElementById('treeComponent'));
 
 
     var apiWrapper = new api.wrapper();
