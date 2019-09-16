@@ -307,41 +307,61 @@ export function ApprovalI(props){
             return options;
         }
         
-        return ( 
-                <div >
-                    <div className="card">
-                <h3> Approval {state.userAuthority==constants.approval_usergroup_level1_code?"MOIC":"CMO/CMS"} </h3>
+        return (
+
+            <div >
+                <div className="card">
+                <h3> Approval {state.userAuthority==constants.approval_usergroup_level1_code?"MOIC/CMS":"CMO/CMS"} </h3>
                 
-                <table >
+                <table>
                 <tbody>
-                <tr>
-                <td>  Select Speciality<span style={{"color":"red"}}> * </span> : </td><td><select title='User Speciality in Doctor Diary'  value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select><br></br> <label key="specialityValidation" ><i>{state.specialityValidation}</i></label>
+                <tr className="row">
+                <td className="col-sm-4">  Select Speciality<span style={{"color":"red"}}> * </span> :
+                 <select className="form-control" title='User Speciality in Doctor Diary'  value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select>
+                  <label key="specialityValidation" className="red"><i>{state.specialityValidation}</i></label>
                 </td>
-                <td className="leftM">  Selected Facility<span style={{"color":"red"}}> * </span>  : </td><td><input disabled  value={state.selectedOU.name} title='Facility Name'></input><br></br><label key="orgUnitValidation" ><i>{state.orgUnitValidation}</i></label></td>
-                
+                <td className="col-sm-4">  Selected Facility<span style={{"color":"red"}}> * </span>  :
+                <input className="form-control" disabled  value={state.selectedOU.name} title='Facility Name'></input>
+                 <label key="orgUnitValidation" className="red"><i>{state.orgUnitValidation}</i></label>
+                </td>
+                 <td className="col-sm-4"> Select OU Mode :
+                        <select className="form-control" title='Selection Mode of Organisation Unit' value = { state.ouMode  }  id="ouMode" onChange = {onOuModeChange}>
+                            <option key="selected" title="Selected Organisation Unit" value="SELECTED" > Selected </option>
+                            <option key="descendants" value="DESCENDANTS" title="Children of Selected Organisation Unit"> Descendants </option>
+                        </select>
+                     <label ><i>&nbsp;</i></label>
+                 </td>
             </tr>
-                <tr>
-                <td> Select Start Period<span style={{"color":"red"}}> * </span>  :  </td><td><input title='Start Date between Date of Selection' type="date" value={state.sdate} onChange = {onStartDateChange} ></input><br></br><label key="startPeValidation" ><i>{}</i></label>
+                <tr className="row">
+                <td className="col-sm-4"> Select Start Period<span style={{"color":"red"}}> * </span>  :
+                 <input className="form-control" title='Start Date between Date of Selection' type="date" value={state.sdate} onChange = {onStartDateChange} ></input>
+                  <label key="startPeValidation" className="red" ><i>{}</i></label>
                 </td>
-                <td className="leftM" > Select End Period<span style={{"color":"red"}}> * </span>  : </td><td><input title='End Date between Date of Selection' type="date" value={state.edate} onChange = {onEndDateChange} ></input><br></br><label key="startPeValidation" ><i>{}</i></label>
+                <td  className="col-sm-4"> Select End Period<span style={{"color":"red"}}> * </span>  :
+                <input className="form-control" title='End Date between Date of Selection' type="date" value={state.edate} onChange = {onEndDateChange} ></input>
+                 <label key="startPeValidation" className="red"><i>{}</i></label>
                 </td>
-                <td></td>
+                    <td className="col-sm-4"> Select Type :
+                        <select className="form-control" title='Type of Status (Pending, Approved Or Rejected)' value = { state.type  }  id="type" onChange = {onTypeChange}>
+                            <option key="rejected"  value={constants.report_types.rejected} > Rejected </option>
+                            <option key="application_for_approval"  value={constants.report_types.pending} > Application for Approval </option>
+                            <option key="approved"  value={constants.report_types.approved} > Approved  </option>
+
+                        </select>
+                        <label ><i>&nbsp;</i></label>
+                    </td>
                 </tr>
-                <tr>
-                <td className="" > Select OU Mode : </td><td><select title='Selection Mode of Organisation Unit' value = { state.ouMode  }  id="ouMode" onChange = {onOuModeChange}> <option key="selected"  value="SELECTED" > Selected </option> <option key="descendants" value="DESCENDANTS" > Descendants </option> </select></td>
 
-                <td className="leftM" > Select Type : </td><td><select title='Type of Status (Pending, Approved Or Rejected)' value = { state.type  }  id="type" onChange = {onTypeChange}>
-                <option key="rejected"  value={constants.report_types.rejected} > Rejected </option>
-                <option key="application_for_approval"  value={constants.report_types.pending} > Application for Approval </option>
-                <option key="approved"  value={constants.report_types.approved} > Approved  </option>
-                
-            </select></td>
-                
-            </tr>
-                <tr></tr><tr></tr>
-                <tr><td>  <input type="submit" value="Submit" onClick={getApprovalEvents} ></input></td>
-                <td> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>
+                <tr className="row">
+                    <td colSpan="3" className="col-sm-8"><br/></td>
+                </tr>
+                <tr className="row">
+                    <td className="col-sm-4">  <input className= "btn btn-primary" type="submit" value="Submit" onClick={getApprovalEvents} ></input></td>
+                <td className="col-sm-4" colSpan="2"> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>
 
+                <tr className="row">
+                    <td colSpan="3" className="col-sm-8"><br/></td>
+                </tr>
             </tbody>                
                 </table></div>
                 {
