@@ -23,25 +23,28 @@ window.onload = function(){
 
     var select = {}
     select.selected = function(callback){
-         return true
         debugger
     }
-
-    ReactDOM.render(<TreeComponent  onSelectCallback={select} selected ='true'/>, document.getElementById('treeComponent'));
+      
+    ReactDOM.render(<TreeComponent  onSelectCallback={select}/>, document.getElementById('treeComponent'));
 
 
     var apiWrapper = new api.wrapper();
     
     var Pprogram = apiWrapper.getObj(`programs\\${constants.program_doc_diary}?fields=id,name,programStages[id,name,programStageDataElements[id,name,sortOrder,dataElement[id,name,formName,displayName,valueType,shortname,optionSet[id,name,code,options[id,name,code]]]]]`)
     var Pme = apiWrapper.getObj(`me.json?fields=id,name,displayName,organisationUnits[id,name],userGroups[id,name,code]`);
-    
-    
-    Promise.all([Pprogram,Pme]).then(function(values){
+    var Ug1 = apiWrapper.getObj(`userGroups/FLOORZAKSJA?fields=id,name,displayName,users[userCredentials[username]]`);
+    var Ug2 = apiWrapper.getObj(`userGroups/UzSe2d0oMH1?fields=id,name,displayName,users[userCredentials[username]]`);
+
+
+    Promise.all([Pprogram,Pme,Ug1,Ug2]).then(function(values){
         
         ReactDOM.render(<ApprovalI data ={
             {
                 program : values[0],
-                user : values[1]
+                user : values[1],
+                usergroup1: values[2],
+                usergroup2: values[3]
             }
         }  services = {
             {

@@ -1,4 +1,5 @@
-exports.DHIS_URL_BASE = "https://uphmis.in/uphmis";
+//exports.DHIS_URL_BASE = "https://uphmis.in/uphmis";
+exports.DHIS_URL_BASE = "https://ln1.hispindia.org/uphmis230";
 exports.username = "admin";
 exports.password = "";
 
@@ -16,21 +17,20 @@ exports.views = {
 };
 
 exports.approval_status = {
-
     approved : "Approved",
     autoapproved : "Auto-Approved",
     rejected : "Rejected",
     resubmitted : "Re-submitted",
     pending2 : "Pending2",
-    pending1 : "Pending1"
-    
+    pending1 : "Pending1",
+    blank: "NULL"
 }
 
 exports.approval_usergroup_level2_code="approval2ndlevel";
 exports.approval_usergroup_level1_code="approval1stlevel";
 
 exports.report_types = {
-
+    typeall: "typeall",
     approved: "approved",
     pending:"pending",
     rejected : "rejected"

@@ -11,10 +11,15 @@ export function ApprovalTable(props){
     
     var state = {
         user : props.user,
+        usergroup1 : props.usergroup1,
+        usergroup2 : props.usergroup2,
         program : props.program,
         events : props.events,
+        sdate : props.sdate,
+        edate:props.edate,
         teiWiseAttrVals : props.teiWiseAttrVals,
         selectedSpeciality : props.selectedSpeciality,
+        seletedUserGroup: props.seletedUserGroup,
         ous : props.ous,
         type : props.type,
         callMeWhenInPain : props.callMeWhenInPain,
@@ -44,16 +49,44 @@ export function ApprovalTable(props){
         map[obj.id] = optionSetMap;
         return map;
     },[]);
-    
-    var teiAttrValMap = state.teiWiseAttrVals.reduce(function(map,tei){
+    //var count = 1;
+    var teiAttrValMap = {};
+    state.teiWiseAttrVals.reduce(function(map,tei){
 
         return tei.attrs.reduce(function(map,obj){
-
-            map[tei.tei+obj.attr] = obj.value;
-            
+                teiAttrValMap[tei.tei+obj.attr]= obj.value;
+                //console.log(tei.tei+obj.attr + " : "+obj.value);
             return map;
         },[]);
-        
+    },[]);
+
+    var dataList = [];
+    //console.log(state.seletedUserGroup);
+    state.dataO = state.events.reduce(function(list,event){
+        var nameObj = teiAttrValMap[event.trackedEntityInstance+"T6eQvMXe3MO"];
+        if((state.selectedSpeciality === 'Kd8DRRvZDro' && state.seletedUserGroup == 'all') || (state.selectedSpeciality === 'Bm7Bc9Bnqoh' && state.seletedUserGroup == 'all')){
+            dataList.push(event);
+        }
+        else if(state.selectedSpeciality === 'Kd8DRRvZDro' || state.selectedSpeciality === 'Bm7Bc9Bnqoh'){
+            if(state.seletedUserGroup === state.usergroup1.id) {
+                state.usergroup1.users.forEach(function (user) {
+                    if(nameObj === user.userCredentials.username){
+                        dataList.push(event);
+                    }
+                });
+            }
+            else if(state.seletedUserGroup === state.usergroup2.id) {
+                state.usergroup2.users.forEach(function (user) {
+                    if(nameObj === user.userCredentials.username){
+                        dataList.push(event);
+                    }
+                });
+            }
+        }
+        else{
+            dataList.push(event);
+        }
+        return dataList;
     },[]);
 
     var ouMap = state.ous.reduce(function(map,obj){
@@ -65,6 +98,7 @@ export function ApprovalTable(props){
     
     instance.render = render;
     return instance;
+
 
     function approveRecord(eventuid,programuid,e){
 
@@ -82,6 +116,7 @@ export function ApprovalTable(props){
         } else {
 
         }
+
     }
 
     function saveDV(eventuid,programuid,
@@ -159,18 +194,25 @@ export function ApprovalTable(props){
         selectedStage.
             programStageDataElements.
             reduce(function(list,obj){
-                list.push(<th className={obj.valueType != "TEXT"?"approval_nonText":""} key={obj.id}>{obj.dataElement.formName}</th>)
+            //console.log(obj.dataElement);
+            if(obj.dataElement.id === "qgzoi2gteWu" || obj.dataElement.id === "ZnzjYCK4r9w"){
+            }
+            else {
+                list.push(<th className={obj.valueType != "TEXT" ? "approval_nonText" : ""}
+                              key={obj.id}>{obj.dataElement.formName}</th>)
+            }
                 return list;
             },list);
-        if(state.type == constants.report_types.pending){
-            list.push(<th className="approval_normal" key="h_operation">Approved/ Rejected</th>);
+        if(state.type == constants.report_types.pending) {
+            list.push(<th className="approval_normal" key="h_operation">Approved/ Rejected </th>);
         }
         return list;
     }
 
     function getRows(){
-        
-        return state.events.reduce(function(list,event){
+
+        return state.dataO.reduce(function(list,event){
+
             var eventDVMap = event.dataValues.reduce(function(map,obj){
 
                 map[obj.dataElement] = obj.value;
@@ -182,7 +224,7 @@ export function ApprovalTable(props){
                         }
                     }
                 }
-                
+
                 return map;                
             },[]);
 
@@ -190,26 +232,39 @@ export function ApprovalTable(props){
             _list.push(<td className="approval_normal" key="d_eventdate">{event.eventDate?event.eventDate.substring(0,10):""}</td>);
             _list.push(<td className="approval_normal" key="d_name of specilist">{teiAttrValMap[event.trackedEntityInstance+"U0jQjrOkFjR"]}</td>);
             _list.push(<td className="approval_wide" key="d_ou">{makeFacilityStrBelowLevel(ouMap[event.orgUnit],2)}</td>);
-            
+            //var statusList = [];
             selectedStage.
                 programStageDataElements.
                 reduce(function(_list,obj){
-                    _list.push(<td className={obj.valueType != "TEXT"?"approval_nonText":""}  key={"d"+obj.id+event.event}>{eventDVMap[obj.dataElement.id]}</td>)
-                    return _list;
+                if(obj.dataElement.id === "qgzoi2gteWu" || obj.dataElement.id === "ZnzjYCK4r9w"){
+                }
+                else {
+                    if(obj.dataElement.id === 'W3RxC0UOsGY')
+                    {
+                        _list.push(<td className={obj.valueType != "TEXT" ? "approval_nonText" : ""}
+                                       key={"d" + obj.id + event.event}>{eventDVMap[obj.dataElement.id]?eventDVMap[obj.dataElement.id]:'Need to Send'}</td>)
+                    }
+                    else{
+                        _list.push(<td className={obj.valueType != "TEXT" ? "approval_nonText" : ""}
+                                       key={"d" + obj.id + event.event}>{eventDVMap[obj.dataElement.id]}</td>)
+                    }
+                }
+                return _list;
                 },_list);
-
             if(state.type == constants.report_types.pending) {
                 _list.push(getButtons(event.event, event.program))
             }
             list.push([<tr key={event.event}>{_list}</tr>]);
+
             return list;
         },[]);
-        
+
+
         function getButtons(eventuid,programuid){
-            return (<td className="approval_normal" key={"b_"+eventuid}><div className="approvalOperationDiv">
-                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Approve" onClick={approveRecord.bind(null,eventuid,programuid)}></input>
-                    <input hidden={state.type == constants.report_types.pending?false:true} className= "approvalButton" type="button" value="Reject" onClick={rejectRecord.bind(null,eventuid,programuid)}></input>
-                    </div></td>)
+            return ( <td className="approval_normal" key={"b_"+eventuid}><div className="approvalOperationDiv">
+                <input hidden={state.type == constants.report_types.pending ?false:true} className= "approvalButton" type="button" value="Approve" onClick={approveRecord.bind(null,eventuid,programuid)}></input>
+                <input hidden={state.type == constants.report_types.pending ?false:true} className= "approvalButton" type="button" value="Reject" onClick={rejectRecord.bind(null,eventuid,programuid)}></input>
+            </div></td>)
         }
     }
     
@@ -226,7 +281,7 @@ export function ApprovalTable(props){
         
         return ( 
                 <div>
-                <ReactHTMLTableToExcel
+                    <ReactHTMLTableToExcel
                         id="test-table-xls-button"
                         className="btn"
                         table="table-to-xls"
@@ -234,8 +289,13 @@ export function ApprovalTable(props){
                         sheet="1"
                         buttonText="Download"/><br/><br/>
 
+                <h5> Record List </h5>
 
-                <table className="approvalTable report" id="table-to-xls">
+                <table className="approvalTable">
+                
+            </table>
+
+                <table className="approvalTable" id="table-to-xls">
                 <thead>
                 <tr>
                 <th colSpan="3">Attributes</th>

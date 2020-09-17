@@ -8,27 +8,31 @@ export function ApprovalI(props){
     
     var instance = Object.create(React.Component.prototype);
     instance.props = props;
-    
+
+    var bbGroup = false;
   
     var state = {
 
         program : props.data.program,
         user : props.data.user,
+        usergroup1: props.data.usergroup1,
+        usergroup2:props.data.usergroup2,
         selectedOU : props.data.user.organisationUnits[0],
         orgUnitValidation : "",
         specialityValidation : "",
+        userValidation : "",
         ouMode : "DESCENDANTS",
         sdate : moment().subtract(1,'months').startOf('month').format("YYYY-MM-DD"),
         edate : moment().subtract(1,'months').endOf('month').format("YYYY-MM-DD"),
         selectedSpeciality : "-1",
+        seletedUserGroup : "-1",
         events : null,
         teiWiseAttrVals : null,
         ous : [],
         type : constants.report_types.pending,
         userAuthority : getUserAuthority(props.data.user)
     };
-
-
+      
     props.services.ouSelectCallback.selected = function(ou){
 
         state.selectedOU = ou;
@@ -41,7 +45,21 @@ export function ApprovalI(props){
 
     function onSpecialityChange(e){
         state.selectedSpeciality = e.target.value;
+        if(state.selectedSpeciality === 'Kd8DRRvZDro' || state.selectedSpeciality === 'Bm7Bc9Bnqoh')
+        {
+            bbGroup = true;
+        }
+        else{
+            bbGroup = false;
+            state.seletedUserGroup = "-1";
+        }
         state.specialityValidation = ""
+
+        instance.setState(state);
+    }
+    function onGroupChange(e){
+        state.seletedUserGroup = e.target.value;
+        state.userValidation = "";
 
         instance.setState(state);
     }
@@ -58,7 +76,7 @@ export function ApprovalI(props){
 
     function onEndDateChange(e){
         state.edate = e.target.value;
-        if ((Date.parse(state.sdate) >= Date.parse(state.edate))) {
+        if ((Date.parse(state.sdate) > Date.parse(state.edate))) {
             alert("End date should be greater than Start date");
         }
         else{
@@ -89,8 +107,14 @@ export function ApprovalI(props){
             instance.setState(state);
             return false;
         }
-        if ((Date.parse(state.sdate) >= Date.parse(state.edate))) {
+        if ((Date.parse(state.sdate) > Date.parse(state.edate))) {
             alert("End date should be greater than Start date");
+            return false;
+        }
+        if((state.selectedSpeciality === 'Kd8DRRvZDro' && state.seletedUserGroup == '-1') || (state.selectedSpeciality === 'Bm7Bc9Bnqoh' && state.seletedUserGroup == '-1'))
+        {
+            state.userValidation = "Please select Buddy Buddy Group"
+            instance.setState(state);
             return false;
         }
         
@@ -126,7 +150,7 @@ export function ApprovalI(props){
         
         function fetchEvents(eventuids){
             
-            var url = `events?paging=false&order=orgUnitName:asc&event=${eventuids}`;
+            var url = `events?paging=false&order=eventDate:desc&event=${eventuids}&org=`+state.selectedOU;
 
             var apiWrapper = new api.wrapper();
             apiWrapper.getObj(url,function(error,body,response){
@@ -171,6 +195,9 @@ export function ApprovalI(props){
             var url = `events/query?program=${constants.program_doc_diary}&startDate=${state.sdate}&endDate=${state.edate}&orgUnit=${state.selectedOU.id}&ouMode=${state.ouMode}&programStage=${state.selectedSpeciality}&skipPaging=true`;
 
             switch(state.type){
+            case constants.report_types.typeall:
+                url = `${url}&filter=${constants.approval_status_de}`
+                break;
             case constants.report_types.approved :
                 url = `${url}&status=COMPLETED&filter=${constants.approval_status_de}:IN:${constants.approval_status.approved};${constants.approval_status.autoapproved}`
                 break;
@@ -227,7 +254,7 @@ export function ApprovalI(props){
 
             var sqlViewService = new api.sqlViewService();
             
-            console.log(constants.query_teiWiseAttrValue(teis))
+            // console.log(constants.query_teiWiseAttrValue(teis))
             sqlViewService.dip("Approval_App",
                                constants.query_teiWiseAttrValue(teis),
                                callback);
@@ -289,7 +316,7 @@ export function ApprovalI(props){
                 return (<div></div>)
             }        
             
-            return (<ApprovalTable key="approvaltable"  events={state.events} program={state.program} user={state.user} teiWiseAttrVals={state.teiWiseAttrVals} selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} userAuthority={state.userAuthority}/>
+            return (<ApprovalTable key="approvaltable"  events={state.events} program={state.program} user={state.user} teiWiseAttrVals={state.teiWiseAttrVals} selectedSpeciality={state.selectedSpeciality} ous={state.ous} type={state.type} callMeWhenInPain={callMeWhenInPain} userAuthority={state.userAuthority} usergroup1={state.usergroup1} usergroup2={state.usergroup2} seletedUserGroup ={state.seletedUserGroup}/>
                    );
             
         }
@@ -306,64 +333,66 @@ export function ApprovalI(props){
             
             return options;
         }
-        
-        return (
+        function getUserGroup(){
 
-            <div >
-                <div className="card">
+            var options = [
+                <option disabled key="select_usergroup" value="-1"> -- Select -- </option>
+            ];
+            options.push(<option key = {state.usergroup1.id}  value={state.usergroup1.id} >{state.usergroup1.name}</option>);
+            options.push(<option key = {state.usergroup2.id}  value={state.usergroup2.id} >{state.usergroup2.name}</option>);
+            options.push(<option key = "all"  value="all" >Buddy Buddy All</option>);
+            return options;
+        }
+        
+        return ( 
+                <div>
                 <h3> Approval {state.userAuthority==constants.approval_usergroup_level1_code?"MOIC/CMS":"CMO/CMS"} </h3>
                 
-                <table>
+                <table className="formX">
                 <tbody>
-                <tr className="row">
-                <td className="col-sm-4">  Select Speciality<span style={{"color":"red"}}> * </span> :
-                 <select className="form-control" title='User Speciality in Doctor Diary'  value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select>
-                  <label key="specialityValidation" className="red"><i>{state.specialityValidation}</i></label>
+                <tr>
+                <td>  Select Speciality<span style={{"color":"red"}}> * </span> : </td><td><select  title='User Speciality in Doctor Diary' value={state.selectedSpeciality} onChange={onSpecialityChange} id="report">{getSpeciality(props.data.program)}</select><br></br> <label key="specialityValidation" ><i>{state.specialityValidation}</i></label>
                 </td>
-                <td className="col-sm-4">  Selected Facility<span style={{"color":"red"}}> * </span>  :
-                <input className="form-control" disabled  value={state.selectedOU.name} title='Facility Name'></input>
-                 <label key="orgUnitValidation" className="red"><i>{state.orgUnitValidation}</i></label>
-                </td>
-                 <td className="col-sm-4"> Select OU Mode :
-                        <select className="form-control" title='Selection Mode of Organisation Unit' value = { state.ouMode  }  id="ouMode" onChange = {onOuModeChange}>
-                            <option key="selected" title="Selected Organisation Unit" value="SELECTED" > Selected </option>
-                            <option key="descendants" value="DESCENDANTS" title="Children of Selected Organisation Unit"> Descendants </option>
-                        </select>
-                     <label ><i>&nbsp;</i></label>
-                 </td>
+                <td className="leftM">  Selected Facility<span style={{"color":"red"}}> * </span>  : </td><td><input disabled  value={state.selectedOU.name} title='Facility Name'></input><br></br><label key="orgUnitValidation" ><i>{state.orgUnitValidation}</i></label></td>
+                
             </tr>
-                <tr className="row">
-                <td className="col-sm-4"> Select Start Period<span style={{"color":"red"}}> * </span>  :
-                 <input className="form-control" title='Start Date between Date of Selection' type="date" value={state.sdate} onChange = {onStartDateChange} ></input>
-                  <label key="startPeValidation" className="red" ><i>{}</i></label>
+                <tr>
+                <td> Select Start Period<span style={{"color":"red"}}> * </span>  :  </td><td><input title='Start Date between Date of Selection' type="date" value={state.sdate} onChange = {onStartDateChange} ></input><br></br><label key="startPeValidation" ><i>{}</i></label>
                 </td>
-                <td  className="col-sm-4"> Select End Period<span style={{"color":"red"}}> * </span>  :
-                <input className="form-control" title='End Date between Date of Selection' type="date" value={state.edate} onChange = {onEndDateChange} ></input>
-                 <label key="startPeValidation" className="red"><i>{}</i></label>
+                <td className="leftM" > Select End Period<span style={{"color":"red"}}> * </span>  : </td><td><input title='End Date between Date of Selection' type="date" value={state.edate} onChange = {onEndDateChange} ></input><br></br><label key="startPeValidation" ><i>{}</i></label>
                 </td>
-                    <td className="col-sm-4"> Select Type :
-                        <select className="form-control" title='Type of Status (Pending, Approved Or Rejected)' value = { state.type  }  id="type" onChange = {onTypeChange}>
-                            <option key="rejected"  value={constants.report_types.rejected} > Rejected </option>
-                            <option key="application_for_approval"  value={constants.report_types.pending} > Application for Approval </option>
-                            <option key="approved"  value={constants.report_types.approved} > Approved  </option>
+                <td></td>
+                </tr>
+                <tr>
+                <td className="" > Select OU Mode : </td><td><select  title='Selection Mode of Organisation Unit' value = { state.ouMode  }  id="ouMode" onChange = {onOuModeChange}> <option title="Selected Organisation Unit" key="selected"  value="SELECTED" > Selected </option> <option title="Children of Selected Organisation Unit" key="descendants" value="DESCENDANTS" > Descendants </option> </select></td>
 
-                        </select>
-                        <label ><i>&nbsp;</i></label>
+                <td className="leftM" > Select Type : </td><td><select  title='Type of Status (Pending, Approved Or Rejected)' value = { state.type  }  id="type" onChange = {onTypeChange}>
+                <option key="rejected"  value={constants.report_types.rejected} > Rejected </option>
+                <option key="typeall"  value={constants.report_types.typeall} > ALL </option>
+                <option key="application_for_approval"  value={constants.report_types.pending} > Application for Approval </option>
+                <option key="approved"  value={constants.report_types.approved} > Approved  </option>
+                
+            </select></td>
+                
+                </tr></tbody></table>
+                    <table className="formX">
+                <tbody>
+                <tr className={!bbGroup?'hidden':'show'}>
+                    <td>  Select Buddy-Buddy Group<span style={{"color":"red"}}> * </span> : </td>
+
+                    <td ><select value={state.seletedUserGroup} onChange={onGroupChange} id="userGroup"> {getUserGroup()}</select><br></br> <label key="userValidation" ><i>{state.userValidation}</i></label>
                     </td>
+                    <td >  </td>
+                    <td></td>
+
                 </tr>
 
-                <tr className="row">
-                    <td colSpan="3" className="col-sm-8"><br/></td>
-                </tr>
-                <tr className="row">
-                    <td className="col-sm-4">  <input className= "btn btn-primary" type="submit" value="Submit" onClick={getApprovalEvents} ></input></td>
-                <td className="col-sm-4" colSpan="2"> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>
+                <tr></tr>
+                <tr><td>  <input type="submit" value="Submit" onClick={getApprovalEvents} ></input></td>
+                <td> <img style = {state.loading?{"display":"inline"} : {"display" : "none"}} src="./images/loader-circle.GIF" alt="loader.." height="32" width="32"></img>  </td></tr>
 
-                <tr className="row">
-                    <td colSpan="3" className="col-sm-8"><br/></td>
-                </tr>
             </tbody>                
-                </table></div>
+                </table>
                 {
                     getApprovalTable()
                 }
